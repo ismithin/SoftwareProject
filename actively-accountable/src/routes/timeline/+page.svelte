@@ -6,6 +6,8 @@
 	let isModalOpen = false;
 	let newPostContent = '';
 	let newPostName = '';
+	let currentUserId = 1; // Replace with the actual logged-in user ID
+
 
 	const openModal = () => (isModalOpen = true);
 	const closeModal = () => (isModalOpen = false);
@@ -21,7 +23,8 @@
 			name: newPostName,
 			avatar: 'https://via.placeholder.com/50',
 			content: newPostContent,
-			timestamp: 'Just now'
+			timestamp: 'Just now',
+			likes: 0 // Default likes count for new posts
 		};
 
 		posts.update((currentPosts) => [newPost, ...currentPosts]);
@@ -42,6 +45,26 @@
 			following: 52
 		}
 	};
+	
+	const likePost = (postId: number) => {
+    posts.update((currentPosts) =>
+        currentPosts.map((post) => {
+            if (post.id === postId) {
+                // Check if user has already liked the post
+                if (post.likedBy.includes(currentUserId)) {
+                    alert("You have already liked this post!");
+                    return post;
+                }
+                return {
+                    ...post,
+                    likes: post.likes + 1,
+                    likedBy: [...post.likedBy, currentUserId] // Add user ID to likedBy
+                };
+            }
+            return post;
+        })
+    );
+};
 </script>
 
 <div class="flex min-h-screen bg-gray-100">
@@ -83,7 +106,7 @@
 			<!-- Scrollable Timeline -->
 			<div class="flex-grow overflow-y-auto bg-gray-50 p-4">
 				{#each $posts as post (post.id)}
-					<div class="rounded bg-gray-50 p-4 shadow-sm">
+					<div class="mb-4 rounded bg-white p-4 shadow-sm">
 						<div class="flex items-center space-x-4">
 							<img src={post.avatar} alt="Avatar" class="h-10 w-10 rounded-full" />
 							<div>
@@ -92,6 +115,15 @@
 							</div>
 						</div>
 						<p class="mt-3 text-gray-700">{post.content}</p>
+						<div class="mt-4 flex items-center space-x-2">
+							<button
+								on:click={() => likePost(post.id)}
+								class="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
+							>
+								Like
+							</button>
+							<span class="text-sm text-gray-600">{post.likes} likes</span>
+						</div>
 					</div>
 				{/each}
 			</div>

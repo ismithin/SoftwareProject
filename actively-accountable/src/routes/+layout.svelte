@@ -12,6 +12,10 @@
 		<!-- Profile Link Wrapper (After Login) -->
 		<div class="relative group">
 		  <a href="/profile" class="text-xl hover:underline">Profile</a>
+
+		<!-- Timeline Link Wrapper (After Login) -->
+		<div class="relative group">
+		  <a href="/timeline" class="text-xl hover:underline">Timeline</a>
   
 		  <!-- Dropdown Menu (Hidden by default, shown on hover or focus) -->
 		  <div class="absolute left-0 mt-2 hidden bg-gray-700 text-white rounded-md shadow-lg group-hover:block group-focus-within:block">
