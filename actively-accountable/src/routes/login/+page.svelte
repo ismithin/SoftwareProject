@@ -18,10 +18,6 @@
 	  '/src/lib/MealImages/frontPageAlbum/meal12.jpg',
 	  '/src/lib/MealImages/frontPageAlbum/meal13.jpg',
 	  '/src/lib/MealImages/frontPageAlbum/meal14.jpg',
-	  '/src/lib/MealImages/frontPageAlbum/meal15.jpg',
-	  '/src/lib/MealImages/frontPageAlbum/meal16.jpg',
-	  '/src/lib/MealImages/frontPageAlbum/meal17.jpg',
-	  '/src/lib/MealImages/frontPageAlbum/meal18.jpg',
 	];
   
 	let currentImages = Array(8).fill('');
@@ -52,20 +48,23 @@
 	  }
 	};
   
+	// Helper function to get a unique random subset of images
+	function getRandomUniqueSubset(array: string[], count: number): string[] {
+	  const shuffled = [...array];
+	  for (let i = shuffled.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+	  }
+	  return shuffled.slice(0, count);
+	}
+  
 	function shuffleAndAlternateImages() {
-	  const interval = 5000; // Change images every 5 seconds
+	  const interval = 5000; // Change images every 2 seconds
   
 	  setInterval(() => {
-		const shuffled = [];
-		while (shuffled.length < 8) {
-		  const randIndex = Math.floor(Math.random() * imagePool.length);
-		  shuffled.push(imagePool[randIndex]);
-		}
+		const newImages = getRandomUniqueSubset(imagePool, 8);
   
-		// Alternate them in a checkerboard pattern
-		currentImages = shuffled.map((img, index) =>
-		  (index % 2 === 0 && index % 4 !== 2) || index % 2 === 1 ? img : shuffled[(index + 1) % shuffled.length]
-		);
+		currentImages = newImages; // Assign unique images
 	  }, interval);
 	}
   
@@ -138,17 +137,16 @@
   </div>
   
   <style>
-	/* General main container */
+	/* General container styles */
 	.main-container {
 	  display: flex;
 	  flex-direction: column;
 	  min-height: 100vh;
 	  background: linear-gradient(to bottom, #d0e8d0, #a8d5ba);
-	  overflow: hidden;
 	  position: relative;
 	}
   
-	/* Animated Grid Background */
+	/* Animated Grid */
 	.grid-container {
 	  display: grid;
 	  grid-template-columns: repeat(4, 1fr);
@@ -163,17 +161,11 @@
 	  overflow: hidden;
 	}
   
-	.grid-item {
-	  display: flex;
-	  align-items: center;
-	  justify-content: center;
-	}
-  
 	.grid-item img {
 	  width: 100%;
 	  height: 100%;
 	  object-fit: cover;
-	  filter: brightness(1.2) contrast(1.3); /* Ensure images are vibrant */
+	  filter: brightness(1.2) contrast(1.3);
 	}
   
 	/* Login overlay */
@@ -190,26 +182,22 @@
 	  background: rgba(255, 255, 255, 0.9);
 	}
   
+	/* Login box */
 	.login-box {
 	  background: white;
 	  padding: 20px;
 	  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 	  border-radius: 8px;
 	  text-align: center;
-	  width: 90%;
+	  width: 100%;
 	  max-width: 400px;
 	}
   
+	/* Auth links */
 	.auth-links {
 	  margin-top: 10px;
 	  text-align: center;
 	  font-size: 0.9em;
-	}
-  
-	.auth-links a {
-	  text-decoration: none;
-	  color: #007bff;
-	  transition: color 0.2s ease;
 	}
   
 	.auth-links a:hover {
