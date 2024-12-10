@@ -1,0 +1,29 @@
+model SecurityUser {
+  id                String            @id @default(uuid())
+  username          String            @unique
+  password          String
+  question          String
+  answer            String
+  
+  sessions          SecuritySession[]
+
+  settings          AppSettings[]
+
+  passwordReset     SecurityReset? @relation("PasswordReset")
+  passwordResetId   String?        @unique // This will store the foreign key to the PasswordReset
+
+}
+
+model SecuritySession {
+  id             String       @id @default(uuid())
+  userId         String       @unique
+  expirationDate DateTime
+  user           SecurityUser @relation(references: [id], fields: [userId], onDelete: Cascade)
+}
+
+model SecurityReset {
+  id             String         @id @default(uuid())
+  userId         String         @unique // Foreign key to the associated user
+  expirationDate DateTime
+  user           SecurityUser   @relation("PasswordReset", fields: [userId], references: [id], onDelete: Cascade)
+}

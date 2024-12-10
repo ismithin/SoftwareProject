@@ -1,0 +1,1 @@
+// Add logic to make it so users don't access auth when already logged in.

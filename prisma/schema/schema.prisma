@@ -1,0 +1,9 @@
+datasource db {
+  url      = env("mysql://admin@localhost/actively_accountable")
+  provider = "mysql"
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
+}

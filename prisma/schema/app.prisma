@@ -1,0 +1,27 @@
+model AppUser {
+  id String @id @default(uuid())
+}
+
+// Could port this over to an actual database schema, but I am tired, so it's a stringified json
+model AppSettings {
+  id       String       @id @default(uuid())
+  settings String
+  userId   String
+  user     SecurityUser @relation(references: [id], fields: [userId], onDelete: Cascade)
+}
+
+model AppComment {
+  id String @id @default(uuid())
+}
+
+model AppPost {
+  id String @id @default(uuid())
+}
+
+model AppFollow {
+  id String @id @default(uuid())
+}
+
+model AppBlock {
+  id String @id @default(uuid())
+}

@@ -1,0 +1,3 @@
+- [*] Make code more reusable and modular.
+- [*] IMPORTANT: Use transactions in prisma to fix possible race conditions when critical section.
+- [ ] Finish /auth/register endpoint 

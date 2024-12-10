@@ -1,0 +1,108 @@
+
+/*
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User_Security {
+	id                      String     @id @default(uuid()) @db.Uuid
+	username                String     @unique
+	password                String
+
+	securityQuestions       String[]
+	securityAnswers         String[]
+
+	creationDate            DateTime   @default(now())
+	
+
+
+}
+
+model User {
+	id                      String     @id @default(uuid()) @db.Uuid
+	username                String     @unique
+	password                String
+	creationDate            DateTime   @default(now())
+
+	security                Security[] @relation(fields: [id]) // The security questions.
+
+	following               User[]     @relation("Follow", fields: [id], references: [id]) // Users this user follows
+	followers               User[]     @relation("Follow", fields: [id], references: [id]) // Users following this user
+
+	blocked                 User[]     @relation("Block", fields: [id], references: [id]) // Users this user has blocked
+	blocking                User[]     @relation("Block", fields: [id], references: [id]) // Users who have blocked this user
+
+	settings                Settings   @relation(fields: [id], references: [userId])
+	
+	@@index([username])
+}
+
+model Security {
+	id                      String     @id @default(uuid()) @db.Uuid
+	userId                  String
+	question                String
+	answer                  String
+	user                    User       @relation(fields: [userId], references: [id])
+}
+
+// hypothetical user settings model, if chosen to implement
+// May change how settings are stored at some point.
+model Settings {
+	userId                  String     @unique
+	settings                Json
+	user                    User       @relation(fields: [userId], references: [id])
+}
+
+model Post {
+	id                      String     @id @default(uuid()) @db.Uuid
+	userId                  String
+	text                    String
+	imageSrc                String?
+	creationDate            DateTime   @default(now())
+	editDate                DateTime   @updatedAt
+	user                    User       @relation(fields: [userId], references: [id])
+	comments                Comment[]
+
+	@@index([createdAt])
+}
+
+model Comment {
+	id                      String     @id @default(uuid()) @db.Uuid
+	userId                  String
+	postId                  String
+	text                    String
+	creationDate            DateTime   @default(now())
+	editDate                DateTime   @updatedAt
+	user                    User       @relation(fields: [userId], references: [id])
+	post                    Post       @relation(fields: [postId], references: [id])
+	parentId                String?
+	parent                  Comment?   @relation("replies",fields: [parentId], references: [id])
+	replies                 Comment[]  @relation("replies")
+
+	@@index([createdAt])
+}
+
+model Follow {
+  followerId                String     @id @db.Uuid
+  followingId               String     @id @db.Uuid
+  follower                  User       @relation("Follow", fields: [followerId], references: [id]) // The user who follows
+  following                 User       @relation("Follow", fields: [followingId], references: [id]) // The user being followed
+}
+
+model Block {
+  blockerId                 String     @id @db.Uuid
+  blockedId                 String     @id @db.Uuid
+  blocker                   User       @relation("Block", fields: [blockerId], references: [id]) // The user who blocks
+  blocked                   User       @relation("Block", fields: [blockedId], references: [id]) // The user being blocked
+}*/
