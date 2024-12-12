@@ -8,7 +8,6 @@
 	let newPostName = '';
 	let currentUserId = 1; // Replace with the actual logged-in user ID
 
-
 	const openModal = () => (isModalOpen = true);
 	const closeModal = () => (isModalOpen = false);
 
@@ -45,26 +44,26 @@
 			following: 52
 		}
 	};
-	
+
 	const likePost = (postId: number) => {
-    posts.update((currentPosts) =>
-        currentPosts.map((post) => {
-            if (post.id === postId) {
-                // Check if user has already liked the post
-                if (post.likedBy.includes(currentUserId)) {
-                    alert("You have already liked this post!");
-                    return post;
-                }
-                return {
-                    ...post,
-                    likes: post.likes + 1,
-                    likedBy: [...post.likedBy, currentUserId] // Add user ID to likedBy
-                };
-            }
-            return post;
-        })
-    );
-};
+		posts.update((currentPosts) =>
+			currentPosts.map((post) => {
+				if (post.id === postId) {
+					// Check if user has already liked the post
+					if (post.likedBy.includes(currentUserId)) {
+						alert('You have already liked this post!');
+						return post;
+					}
+					return {
+						...post,
+						likes: post.likes + 1,
+						likedBy: [...post.likedBy, currentUserId] // Add user ID to likedBy
+					};
+				}
+				return post;
+			})
+		);
+	};
 </script>
 
 <div class="flex min-h-screen bg-gray-100">
