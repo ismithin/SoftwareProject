@@ -10,7 +10,7 @@
 
 	// Validate password
 	const validatePassword = (password: string) => {
-		const passwordRegex = /^(?=.*[A-Z])(?=.*\d)/; 
+		const passwordRegex = /^(?=.*[A-Z])(?=.*\d)/;
 		return passwordRegex.test(password);
 	};
 
@@ -61,7 +61,7 @@
 		}
 	};
 
-	// Shuffle and alternate images for background animation
+	// Image pool and random selection logic
 	const imagePool = [
 		'/src/lib/MealImages/frontPageAlbum/meal1.jpg',
 		'/src/lib/MealImages/frontPageAlbum/meal2.jpg',
@@ -79,27 +79,20 @@
 		'/src/lib/MealImages/frontPageAlbum/meal14.jpg'
 	];
 
-	let currentImages = Array(8).fill('');
+	let currentImages: string[] = [];
 
-	// Function to shuffle and alternate images for animation
-	function shuffleAndAlternateImages() {
-		const interval = 2000;
-
-		setInterval(() => {
-			const shuffled = [];
-			while (shuffled.length < 8) {
-				const randIndex = Math.floor(Math.random() * imagePool.length);
-				shuffled.push(imagePool[randIndex]);
-			}
-
-			currentImages = shuffled.map((img, index) =>
-				(index % 2 === 0 && index % 4 !== 2) || index % 2 === 1 ? img : shuffled[(index + 1) % shuffled.length]
-			);
-		}, interval);
+	// Select 8 unique random images from the pool
+	function initializeImages() {
+		const shuffled = [...imagePool];
+		for (let i = shuffled.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+		}
+		currentImages = shuffled.slice(0, 8);
 	}
 
-	// Call the animation shuffling
-	shuffleAndAlternateImages();
+	// Initialize images when the script runs
+	initializeImages();
 </script>
 
 <div class="main-container">
