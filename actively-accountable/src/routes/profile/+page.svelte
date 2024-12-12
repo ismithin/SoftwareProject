@@ -25,20 +25,38 @@
 	// Lifecycle hook to fetch user data
 	onMount(async () => {
 		try {
-			const email = localStorage.getItem('email');
-			if (!email) {
+			const token = localStorage.getItem('token');
+			if (!token) {
 				throw new Error('No logged-in user.');
 			}
 
-			const response = await fetch(`http://localhost:5000/api/auth/profile?email=${email}`);
+			const response = await fetch('http://localhost:5000/api/auth/profile', {
+				headers: { Authorization: `Bearer ${token}` }
+			});
+
 			if (!response.ok) {
 				throw new Error('Failed to fetch user profile.');
 			}
 
-			user = await response.json();
-			if (user) {
-				tempUser = { ...user }; // Only spread if user is non-null
-			}
+			const userData = await response.json();
+
+			// Ensure type compatibility
+			user = {
+				...userData,
+				// Ensure all required fields are present with defaults
+				bio: userData.bio || 'Welcome to the app! Edit your bio here.',
+				privacy: userData.privacy || true,
+				desiredWeightPrivacy: userData.desiredWeightPrivacy || false,
+				goalIntakePrivacy: userData.goalIntakePrivacy || false,
+				dailyActivityPrivacy: userData.dailyActivityPrivacy || false,
+				weight: new Float32Array(userData.weight || [0]),
+				desiredWeight: new Float32Array(userData.desiredWeight || [0]),
+				goalIntake: userData.goalIntake || 2000,
+				dailyActivity: userData.dailyActivity || 30,
+				profilePicture:
+					userData.profilePicture ||
+					'SoftwareProject/actively-accountable/src/lib/defaultUser/defaultUser.webp' // Replace with actual default image path
+			};
 		} catch (error) {
 			errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
 			console.error(error);
@@ -48,28 +66,46 @@
 	// Conversion functions with rounding to hundredths
 	const kgToLbs = (kg: number) => (Math.round(kg * 2.20462 * 100) / 100).toFixed(2);
 	const lbsToKg = (lbs: number) => (Math.round((lbs / 2.20462) * 100) / 100).toFixed(2);
-	const formatWeight = (weight: Float32Array) => weight[0].toFixed(2); // Adjust to handle Float32Array
+	const formatWeight = (weight: number) => weight.toFixed(2); // Format number to 2 decimal places
 
 	// Save profile edits
-	const saveProfile = () => {
-		if (tempUser) {
-			tempUser.weight[0] = isLbs ? parseFloat(lbsToKg(tempUser.weight[0])) : tempUser.weight[0];
-			tempUser.desiredWeight[0] = isLbs
-				? parseFloat(lbsToKg(tempUser.desiredWeight[0]))
-				: tempUser.desiredWeight[0];
-			user = { ...tempUser };
-			isEditing = false;
+	const saveProfile = async () => {
+		if (!user) {
+			console.error('Cannot save: user is null.');
+			return;
+		}
 
-			// Optionally, send updated profile data to the backend
-			updateProfileOnBackend(user);
-		} else {
-			console.error('Cannot save: tempUser is null.');
+		try {
+			const payload = {
+				...user,
+				weight: Number(user.weight), // Ensure it's a number
+				desiredWeight: Number(user.desiredWeight) // Ensure it's a number
+			};
+
+			const response = await fetch('http://localhost:5000/api/auth/update-profile', {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${localStorage.getItem('token')}`
+				},
+				body: JSON.stringify(payload)
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to update profile.');
+			}
+
+			console.log('Profile updated successfully.');
+			isEditing = false;
+		} catch (error) {
+			errorMessage =
+				error instanceof Error ? error.message : 'An error occurred while updating the profile.';
+			console.error(error);
 		}
 	};
 
 	// Cancel edits
 	const cancelEdit = () => {
-		tempUser = { ...user }; // Revert changes
 		isEditing = false;
 	};
 
@@ -78,11 +114,6 @@
 		const file = (event.target as HTMLInputElement)?.files?.[0];
 		if (file) {
 			const reader = new FileReader();
-			reader.onload = () => {
-				if (tempUser) {
-					tempUser.profilePicture = reader.result as string;
-				}
-			};
 			reader.readAsDataURL(file);
 		}
 	};
@@ -115,8 +146,8 @@
 
 	// Logout functionality
 	const logout = () => {
-		localStorage.removeItem('email'); // Clear email from localStorage
-		window.location.href = '/login'; // Redirect to login page
+		localStorage.removeItem('token'); // Remove the token from localStorage
+		window.location.href = '/login'; // Redirect to the login page
 	};
 </script>
 
@@ -195,7 +226,7 @@
 							<input
 								id="name"
 								type="text"
-								bind:value={tempUser.name}
+								bind:value={user.name}
 								class="w-full rounded border border-green-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
 							/>
 						</div>
@@ -204,7 +235,7 @@
 							<input
 								id="email"
 								type="email"
-								bind:value={tempUser.email}
+								bind:value={user.email}
 								class="w-full rounded border border-green-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
 							/>
 						</div>
@@ -212,7 +243,7 @@
 							<label for="bio" class="block font-semibold text-gray-600">Bio:</label>
 							<textarea
 								id="bio"
-								bind:value={tempUser.bio}
+								bind:value={user.bio}
 								class="w-full rounded border border-green-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
 							></textarea>
 						</div>
@@ -224,7 +255,7 @@
 								<input
 									id="weight"
 									type="number"
-									bind:value={tempUser.weight[0]}
+									bind:value={user.weight[0]}
 									class="w-full rounded border border-green-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
 								/>
 							</div>
@@ -237,7 +268,7 @@
 									Toggle to {isLbs ? 'kg' : 'lbs'}
 								</button>
 								<label class="flex items-center space-x-2">
-									<input type="checkbox" bind:checked={tempUser.privacy} class="form-checkbox" />
+									<input type="checkbox" bind:checked={user.privacy} class="form-checkbox" />
 									<span class="font-semibold text-gray-600"> Display weight on profile </span>
 								</label>
 							</div>
@@ -250,7 +281,7 @@
 								<input
 									id="desiredWeight"
 									type="number"
-									bind:value={tempUser.desiredWeight[0]}
+									bind:value={user.desiredWeight[0]}
 									class="w-full rounded border border-green-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
 								/>
 							</div>
@@ -258,7 +289,7 @@
 								<label class="flex items-center space-x-2">
 									<input
 										type="checkbox"
-										bind:checked={tempUser.desiredWeightPrivacy}
+										bind:checked={user.desiredWeightPrivacy}
 										class="form-checkbox"
 									/>
 									<span class="font-semibold text-gray-600">
@@ -275,7 +306,7 @@
 							<input
 								id="goalIntake"
 								type="number"
-								bind:value={tempUser.goalIntake}
+								bind:value={user.goalIntake}
 								class="w-full rounded border border-green-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
 							/>
 						</div>
@@ -286,7 +317,7 @@
 							<input
 								id="dailyActivity"
 								type="number"
-								bind:value={tempUser.dailyActivity}
+								bind:value={user.dailyActivity}
 								class="w-full rounded border border-green-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
 							/>
 						</div>
@@ -295,7 +326,7 @@
 							<label class="flex items-center space-x-2">
 								<input
 									type="checkbox"
-									bind:checked={tempUser.goalIntakePrivacy}
+									bind:checked={user.goalIntakePrivacy}
 									class="form-checkbox"
 								/>
 								<span class="font-semibold text-gray-600"> Display goal intake on profile </span>
@@ -305,7 +336,7 @@
 							<label class="flex items-center space-x-2">
 								<input
 									type="checkbox"
-									bind:checked={tempUser.dailyActivityPrivacy}
+									bind:checked={user.dailyActivityPrivacy}
 									class="form-checkbox"
 								/>
 								<span class="font-semibold text-gray-600"> Display daily activity on profile </span>
